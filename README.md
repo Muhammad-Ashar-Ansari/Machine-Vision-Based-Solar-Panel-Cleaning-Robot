@@ -29,4 +29,6 @@
 ESP32 · L298N · MQTT · HiveMQ · HTML/CSS/JS · Paho.js · Arduino IDE
 
 ## 👥 Team
-Mechatronics Engineering — MUET Jamshoro, Batch 2022–2026
+Muhammad Ashar Ansari 22MTE039 (Group Leader)
+Muhammad Abdullah 22MTE041
+Muhammad Sameed 22MTE101
