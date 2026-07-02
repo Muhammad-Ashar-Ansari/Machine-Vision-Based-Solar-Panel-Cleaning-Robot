@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolarBot PK — Control Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #f1efe8; min-height: 100vh; }
+
+.topbar {
+  background: #0a2540; padding: 0 2rem; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.logo-area { display: flex; align-items: center; gap: 12px; }
+.logo-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: linear-gradient(135deg, #f5a623, #f7c94b);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.logo-text { color: #fff; font-size: 16px; font-weight: 500; }
+.logo-sub { color: #7a9bbf; font-size: 11px; margin-top: 1px; }
+.status-bar { display: flex; align-items: center; gap: 14px; }
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+}
+.status-pill.offline { background: #1e3a5f; color: #7a9bbf; }
+.status-pill.online { background: #0d3d2a; color: #4ade80; }
+.dot { width: 7px; height: 7px; border-radius: 50%; }
+.dot.offline { background: #7a9bbf; }
+.dot.online { background: #4ade80; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.robot-badge {
+  padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  background: #1e3a5f; color: #7a9bbf;
+}
+.connect-btn {
+  padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  cursor: pointer; border: 0.5px solid #3a6a9f;
+  background: #1e3a5f; color: #a8d0f0; transition: background 0.15s;
+}
+.connect-btn:hover { background: #0d2d4a; }
+.connect-btn.disconnect { background: #3d1a1a; color: #fca5a5; border-color: #7f1d1d; }
+.connect-btn.disconnect:hover { background: #4a1f1f; }
+
+.main { padding: 1.25rem 2rem; display: grid; gap: 1rem; }
+
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.card {
+  background: #fff; border-radius: 12px;
+  border: 0.5px solid #d3d1c7; padding: 1.25rem;
+}
+.card-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.8px;
+  color: #888780; text-transform: uppercase; margin-bottom: 0.75rem;
+}
+.stat-val { font-size: 26px; font-weight: 500; color: #2c2c2a; }
+.stat-sub { font-size: 12px; color: #888780; margin-top: 3px; }
+.battery-bar { height: 8px; background: #f1efe8; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.battery-fill { height: 100%; border-radius: 4px; background: #22c55e; transition: width 0.5s; }
+
+.section-title {
+  font-size: 13px; font-weight: 500; color: #5f5e5a;
+  margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;
+}
+
+.dpad-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 0.25rem; }
+.dpad-row { display: flex; gap: 6px; }
+.ctrl-btn {
+  border: 0.5px solid #b4b2a9; background: #fff; border-radius: 8px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: #2c2c2a; font-size: 20px;
+  transition: background 0.12s, transform 0.1s; user-select: none;
+}
+.ctrl-btn:hover:not(:disabled) { background: #f1efe8; }
+.ctrl-btn:active:not(:disabled) { transform: scale(0.94); }
+.ctrl-btn.dir { width: 52px; height: 52px; }
+.ctrl-btn.stop-mid {
+  width: 52px; height: 52px;
+  background: #fff1f1; border-color: #fca5a5; color: #dc2626;
+  font-size: 12px; font-weight: 500;
+}
+.ctrl-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+.toggle-row { display: flex; flex-direction: column; gap: 8px; }
+.toggle-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-radius: 10px;
+  border: 0.5px solid #d3d1c7; background: #f1efe8;
+}
+.toggle-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #2c2c2a; }
+.toggle-sub { font-size: 11px; color: #888780; margin-top: 1px; }
+.switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider-sw {
+  position: absolute; cursor: pointer; inset: 0;
+  background: #d3d1c7; border-radius: 22px; transition: 0.2s;
+}
+.slider-sw:before {
+  content: ''; position: absolute; height: 16px; width: 16px;
+  left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s;
+}
+.switch input:checked + .slider-sw { background: #0a2540; }
+.switch input:checked + .slider-sw:before { transform: translateX(18px); }
+.switch input:disabled + .slider-sw { opacity: 0.3; cursor: not-allowed; }
+
+.estop {
+  width: 100%; padding: 12px; border-radius: 10px;
+  background: #dc2626; border: none; color: white;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background 0.15s, transform 0.1s; margin-top: 0.75rem;
+}
+.estop:hover { background: #b91c1c; }
+.estop:active { transform: scale(0.98); }
+.estop:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.log-area {
+  height: 130px; overflow-y: auto;
+  font-size: 11px; font-family: monospace;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.log-entry { display: flex; gap: 8px; }
+.log-time { color: #888780; flex-shrink: 0; }
+.log-msg { color: #5f5e5a; }
+.log-msg.ok { color: #16a34a; }
+.log-msg.warn { color: #d97706; }
+.log-msg.err { color: #dc2626; }
+
+.cam-box {
+  background: #0a2540; border-radius: 10px; height: 150px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #7a9bbf; gap: 6px; font-size: 12px;
+}
+.cam-box i { font-size: 32px; opacity: 0.45; }
+
+@media (max-width: 700px) {
+  .grid-3 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .main { padding: 1rem; }
+  .topbar { padding: 0 1rem; }
+  .logo-sub { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo-area">
+    <div class="logo-icon">☀️</div>
+    <div>
+      <div class="logo-text">SolarBot PK</div>
+      <div class="logo-sub">Control Dashboard — MUET FYP 2026</div>
+    </div>
+  </div>
+  <div class="status-bar">
+    <div class="status-pill offline" id="mqtt-pill">
+      <div class="dot offline" id="mqtt-dot"></div>
+      <span id="mqtt-label">Disconnected</span>
+    </div>
+    <div class="robot-badge" id="robot-badge">Idle</div>
+    <button class="connect-btn" id="conn-btn" onclick="toggleConn()">Connect</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-label">Battery</div>
+      <div class="stat-val" id="bat-val">—</div>
+      <div class="stat-sub">12V 7Ah LiPo</div>
+      <div class="battery-bar"><div class="battery-fill" id="bat-fill" style="width:0%"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Commands sent</div>
+      <div class="stat-val" id="cmd-count">0</div>
+      <div class="stat-sub">This session</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Broker</div>
+      <div class="stat-val" style="font-size:13px;margin-top:4px;color:#5f5e5a">broker.hivemq.com</div>
+      <div class="stat-sub">Port 8884 · WSS</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title"><i class="ti ti-steering-wheel"></i> Movement control</div>
+      <div class="dpad-wrap">
+        <div class="dpad-row">
+          <button class="ctrl-btn dir" id="b-fwd" disabled onclick="send('robot/movement','forward')">
+            <i class="ti ti-arrow-up"></i>
+          </button>
+        </div>
+        <div class="dpad-row">
+          <button class="ctrl-btn dir" id="b-left" disabled onclick="send('robot/movement','left')">
+            <i class="ti ti-arrow-left"></i>
+          </button>
+          <button class="ctrl-btn stop-mid" id="b-stop" disabled onclick="send('robot/movement','stop')">STOP</button>
+          <button class="ctrl-btn dir" id="b-right" disabled onclick="send('robot/movement','right')">
+            <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+        <div class="dpad-row">
+          <button class="ctrl-btn dir" id="b-bwd" disabled onclick="send('robot/movement','backward')">
+            <i class="ti ti-arrow-down"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="ti ti-settings"></i> Systems</div>
+      <div class="toggle-row">
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <span>🖌️</span>
+            <div><div>Brush motor</div><div class="toggle-sub">RS775 rotating brush</div></div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="sw-brush" disabled onchange="send('robot/brush', this.checked?'on':'off')">
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <span>💧</span>
+            <div><div>Water pump</div><div class="toggle-sub">Tank 1 · ~580ml</div></div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="sw-pump1" disabled onchange="send('robot/pump1', this.checked?'on':'off')">
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <span>🧴</span>
+            <div><div>Soap pump</div><div class="toggle-sub">Tank 2 · cleaning solution</div></div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="sw-pump2" disabled onchange="send('robot/pump2', this.checked?'on':'off')">
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+      </div>
+      <button class="estop" id="estop" disabled onclick="eStop()">
+        <i class="ti ti-alert-triangle"></i> Emergency stop
+      </button>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title"><i class="ti ti-video"></i> Live camera feed</div>
+      <div class="cam-box">
+        <i class="ti ti-camera-off"></i>
+        <span>ESP32-CAM not connected</span>
+        <span style="font-size:11px;opacity:0.6">Configure IP after robot boots</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title"><i class="ti ti-terminal"></i> Activity log</div>
+      <div class="log-area" id="log"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+<script>
+let mqttClient = null;
+let isConnected = false;
+let cmdCount = 0;
+const BROKER = 'broker.hivemq.com';
+const PORT = 8884;
+const CID = 'SolarBotDash_' + Math.random().toString(16).slice(2,8);
+
+function addLog(msg, type='') {
+  const area = document.getElementById('log');
+  const t = new Date().toTimeString().slice(0,8);
+  const el = document.createElement('div');
+  el.className = 'log-entry';
+  el.innerHTML = `<span class="log-time">${t}</span><span class="log-msg ${type}">${msg}</span>`;
+  area.appendChild(el);
+  area.scrollTop = area.scrollHeight;
+}
+
+function setUI(state) {
+  isConnected = state;
+  const pill = document.getElementById('mqtt-pill');
+  const dot = document.getElementById('mqtt-dot');
+  const badge = document.getElementById('robot-badge');
+  const btn = document.getElementById('conn-btn');
+  document.querySelectorAll('.ctrl-btn').forEach(b => b.disabled = !state);
+  document.querySelectorAll('.switch input').forEach(s => { s.disabled = !state; if(!state) s.checked = false; });
+  document.getElementById('estop').disabled = !state;
+  if (state) {
+    pill.className = 'status-pill online'; dot.className = 'dot online';
+    document.getElementById('mqtt-label').textContent = 'Connected';
+    btn.textContent = 'Disconnect'; btn.className = 'connect-btn disconnect';
+    document.getElementById('bat-val').textContent = '87%';
+    document.getElementById('bat-fill').style.width = '87%';
+    badge.textContent = 'Ready'; badge.style.background = '#0d3d2a'; badge.style.color = '#4ade80';
+  } else {
+    pill.className = 'status-pill offline'; dot.className = 'dot offline';
+    document.getElementById('mqtt-label').textContent = 'Disconnected';
+    btn.textContent = 'Connect'; btn.className = 'connect-btn';
+    document.getElementById('bat-val').textContent = '—';
+    document.getElementById('bat-fill').style.width = '0%';
+    badge.textContent = 'Idle'; badge.style.background = '#1e3a5f'; badge.style.color = '#7a9bbf';
+  }
+}
+
+function toggleConn() {
+  if (isConnected) { mqttClient.disconnect(); setUI(false); addLog('Disconnected.', 'warn'); return; }
+  addLog('Connecting to ' + BROKER + ':' + PORT + '...');
+  try {
+    mqttClient = new Paho.Client(BROKER, PORT, '/mqtt', CID);
+    mqttClient.onConnectionLost = () => { setUI(false); addLog('Connection lost.', 'err'); };
+    mqttClient.onMessageArrived = (m) => { addLog('← ' + m.destinationName + ': ' + m.payloadString); };
+    mqttClient.connect({
+      useSSL: true,
+      onSuccess: () => {
+        setUI(true);
+        addLog('Connected to HiveMQ broker.', 'ok');
+        mqttClient.subscribe('robot/status');
+        addLog('Subscribed to robot/status.', 'ok');
+      },
+      onFailure: (e) => { addLog('Failed: ' + e.errorMessage, 'err'); }
+    });
+  } catch(e) { addLog('Error: ' + e.message, 'err'); }
+}
+
+function send(topic, payload) {
+  if (!isConnected) return;
+  const msg = new Paho.Message(payload);
+  msg.destinationName = topic;
+  mqttClient.send(msg);
+  cmdCount++;
+  document.getElementById('cmd-count').textContent = cmdCount;
+  addLog('→ ' + topic + ': ' + payload, 'ok');
+  if (topic === 'robot/movement') {
+    const badge = document.getElementById('robot-badge');
+    badge.textContent = payload.charAt(0).toUpperCase() + payload.slice(1);
+  }
+}
+
+function eStop() {
+  send('robot/movement','stop');
+  send('robot/brush','off');
+  send('robot/pump1','off');
+  send('robot/pump2','off');
+  ['sw-brush','sw-pump1','sw-pump2'].forEach(id => document.getElementById(id).checked = false);
+  const badge = document.getElementById('robot-badge');
+  badge.textContent = 'E-STOP'; badge.style.background = '#7f1d1d'; badge.style.color = '#fca5a5';
+  addLog('⚠ Emergency stop — all systems halted.', 'err');
+}
+
+addLog('Dashboard ready. Press Connect to begin.');
+</script>
+</body>
+</html>
