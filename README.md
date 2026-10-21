@@ -1,6 +1,8 @@
-## ✅ Completed Tasks
+# SolarBot — Machine Vision-Based Solar Panel Cleaning Robot
+**MUET FYP 2026 | Mechatronics Engineering**
 
-- ESP32 Setup
+## ✅ Completed Tasks
+- ESP32 Setup & Testing
 - ESP32 Blink Test
 - Serial Communication Test
 - WiFi Connectivity Test
@@ -8,27 +10,29 @@
 - DC Motor Control Code (Track + Brush Motors)
 - MQTT Integration (ESP32 + HiveMQ Broker)
 - Web Control Dashboard (HTML + Paho.js)
+- Node-RED IoT Dashboard
+- Hardware Assembly & Mechanical Fabrication
+- L298N Motor Driver Testing & Integration
+- Track Motor Control (Differential Drive)
+- Brush Motor Integration (RS775)
+- Water Pump Control (Relay + BC547 Transistor Interface)
+- Complete Wiring & Hardware Integration
+- ESP32-CAM Live Stream in Dashboard
+- Real-time Dust Detection (Python + OpenCV)
 
 ## 🔄 In Progress
-
-- L298N Motor Driver Testing
-- Track Motor Control
-- Brush Motor Integration
-- Machine Vision Implementation
-- Hardware Integration & Assembly
-- Water Pump & Relay Wiring
+- MQTT-based Automatic Cleaning Decision Integration
+- Machine Vision Algorithm Fine-tuning
 
 ## ⏳ Remaining
-
-- ESP32-CAM Live Stream in Dashboard
-- Machine Vision & Dust Detection
 - Field Testing on Actual Solar Panel
-- FYP-2 Documentation
+- System Reliability Evaluation
+- FYP-2 Documentation & Report
 
 ## 🛠 Tech Stack
-ESP32 · L298N · MQTT · HiveMQ · HTML/CSS/JS · Paho.js · Arduino IDE
+ESP32 · ESP32-CAM · L298N · MQTT · HiveMQ · Node-RED · HTML/CSS/JS · Paho.js · Python · OpenCV · Arduino IDE · SolidWorks · Proteus
 
 ## 👥 Team
-Muhammad Ashar Ansari 22MTE039 (Group Leader)
-Muhammad Abdullah 22MTE041
-Muhammad Sameed 22MTE101
+- Muhammad Ashar Ansari — 22MTE039 (Group Leader)
+- Muhammad Abdullah — 22MTE041
+- Muhammad Sameed — 22MTE101
